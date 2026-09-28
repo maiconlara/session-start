@@ -1,6 +1,6 @@
 ---
 name: session-start
-description: Standing session rules that must be loaded at the start of every session, before any other work. Covers the quality bar (never trade correctness for token savings), answering questions instead of acting on them, plain Brazilian Portuguese that anchors every explanation in files, screens and examples, translating AI-written Jira tickets for the user, the full path of every file created, the total ban on em-dashes, the useEffect ban, the Lodash ban, the comment policy, and per-commit/per-push authorization. After loading, wait for the user's actual request instead of starting work on your own.
+description: Standing session rules that must be loaded at the start of every session, before any other work. Covers the quality bar (never trade correctness for token savings), answering questions instead of acting on them, the four-field session contract (Papel, Regra, Exemplo, Critério de sucesso) required before every request and waived only by the user explicitly, plain Brazilian Portuguese that anchors every explanation in files, screens and examples, translating AI-written Jira tickets for the user, the full path of every file created, the total ban on em-dashes, the useEffect ban, the Lodash ban, the comment policy, and per-commit/per-push authorization. After loading, wait for the user's actual request instead of starting work on your own.
 ---
 
 # Session Start Rules
@@ -13,7 +13,7 @@ Always aim for the best possible solution. Any attempt to reduce tokens that pro
 
 ## Questions get answers, not changes
 
-When the user asks a question, the reply is the answer. A question never authorizes a change: do not edit code, files, docs, prompts, tickets, configs, or anything else because of it, even when the question points at a real mistake.
+When the user asks a question, the reply is the answer, after the session contract (see Session contract). A question never authorizes a change: do not edit code, files, docs, prompts, tickets, configs, or anything else because of it, even when the question points at a real mistake.
 
 Rationale: the recurring failure is skipping the answer and going straight to changing whatever the question was about.
 
@@ -28,6 +28,16 @@ Example:
 - User: `Por que seu prompt está assim? "Você vai implementar a parte que falta do item B: publicar a comissão no detalhe da reserva, para preencher a coluna do relatório." Isso dá a entender que será feita só uma coluna.`
 - Bad: `Vou corrigir o arquivo do prompt, já que ele estava restrito demais. Explico os motivos em seguida.` (changes the file first, explains later)
 - Good: `Escrevi assim porque o plano que usei de base só falava dessa coluna. Você tem razão: do jeito que está, quem ler vai entender que é só ela. Dá para reescrever o começo listando todas as colunas do item B. Quer que eu corrija?`
+
+## Session contract
+
+Every request gets a four-field contract with the user before you answer or act: Papel, Regra, Exemplo, and Critério de sucesso. Inspect the repository first, propose each missing field from what you found, validate every field, keep to the contract during the task, and check the result against it at the end.
+
+Only the user can skip it, and only explicitly ("seguir sem contrato"). Never skip it on your own because a request looks small, simple, or urgent.
+
+The full procedure, with the templates and the acceptance test for each field, lives in [CONTRACT.md](CONTRACT.md), next to this file:
+
+@CONTRACT.md
 
 ## Talk like a person, in Brazilian Portuguese
 
@@ -189,4 +199,4 @@ Commits are made ONLY with the user's explicit authorization. One authorization 
 This skill only loads the rules above; it does not start any work.
 
 - If the user has not sent an actual request yet, reply with one short line confirming the session rules are loaded, then wait for the true start of the session.
-- If the user's request is already present in the conversation, apply these rules and proceed with that request directly, without a separate acknowledgment.
+- If the user's request is already present in the conversation, apply these rules and proceed with that request directly (starting with the session contract, unless the user explicitly waived it), without a separate acknowledgment.

@@ -11,12 +11,13 @@ reads `SKILL.md`, loaded automatically into every session through a one-line imp
 user-level `CLAUDE.md`.
 
 It carries the standing rules a session must follow before doing anything else: the quality
-bar (token savings never justify a worse result), questions answered instead of acted on,
-plain Brazilian Portuguese that ties every explanation to the file, the screen and a
-concrete example, AI-written Jira tickets translated for the user, the full path of every
-file created, the total ban on em-dashes, the `useEffect` ban with its single debounce
-exception, the Lodash ban, the comment policy (straightforward JSDoc-style technical
-documentation or nothing), and per-commit/per-push authorization.
+bar (token savings never justify a worse result), questions answered instead of acted on, a
+four-field contract (Papel, Regra, Exemplo, Critério de sucesso) agreed before every
+request and waived only by the user, plain Brazilian Portuguese that ties every explanation to the file, the
+screen and a concrete example, AI-written Jira tickets translated for the user, the full
+path of every file created, the total ban on em-dashes, the `useEffect` ban with its single
+debounce exception, the Lodash ban, the comment policy (straightforward JSDoc-style
+technical documentation or nothing), and per-commit/per-push authorization.
 
 Instead of repeating the same corrections at the start of every session, the rules are
 versioned here once and arrive in context before the first reply, every time.
@@ -60,8 +61,8 @@ does not exist) and Claude Code loads the rules into every session, in every pro
 ```
 
 Point the path at wherever the repo lives. Claude Code expands the import when the session
-starts and sends the whole file with every request, so compaction never summarizes it away,
-and subagents receive it too.
+starts, along with `CONTRACT.md`, which `SKILL.md` imports in turn, and sends both files with
+every request, so compaction never summarizes them away, and subagents receive them too.
 
 Upgrading from the old `SessionStart` hook: delete that hook from `~/.claude/settings.json`
 and add the import above. Keeping both loads the rules twice, and the hook alone no longer
@@ -82,6 +83,7 @@ actual start of the session.
 |---|---|
 | Best solution first | Any token saving that produces a worse result is invalid |
 | Questions get answers | A question is answered, never taken as a cue to change code, files or anything else |
+| Session contract | Every request starts with Papel, Regra, Exemplo and Critério de sucesso drafted from the repository and ends checked against them; only the user can waive it, explicitly |
 | Talk like a person | Plain Brazilian Portuguese without AI jargon; every code explanation names the file, the screen or column, and a concrete example |
 | Translate Jira tickets | Acronyms, niche terms and internal labels of AI-written tickets are explained, never guessed |
 | Show created file paths | Every file created, moved or exported comes with its full absolute path, in the operating system's own format |
@@ -93,7 +95,8 @@ actual start of the session.
 | After loading | Confirm and wait for the user's actual request instead of starting work |
 
 The full text, with the rationale and the code patterns to use instead, lives in
-[SKILL.md](SKILL.md).
+[SKILL.md](SKILL.md), and the contract procedure, with its templates, in
+[CONTRACT.md](CONTRACT.md).
 
 ## Requirements
 
@@ -103,7 +106,8 @@ Claude Code for the automatic loading. As a plain skill, it works in any agent t
 ## Structure
 
 ```
-SKILL.md    the rules, the only file loaded into context
+SKILL.md       the standing rules, imported into every session
+CONTRACT.md    the session contract procedure, imported by SKILL.md
 ```
 
 ## FAQ
