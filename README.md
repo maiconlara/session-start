@@ -7,12 +7,16 @@ Standing session rules, loaded before the first reply of every Claude Code sessi
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-skill-d97757)](https://code.claude.com/docs/en/skills)
 
 An [agent skill](https://code.claude.com/docs/en/skills) for Claude Code and any agent that
-reads `SKILL.md`, plus the `SessionStart` hook script that injects it automatically.
+reads `SKILL.md`, loaded automatically into every session through a one-line import in your
+user-level `CLAUDE.md`.
 
 It carries the standing rules a session must follow before doing anything else: the quality
-bar (token savings never justify a worse result), the total ban on em-dashes, the
-`useEffect` ban with its single debounce exception, the comment policy (straightforward
-JSDoc-style technical documentation or nothing), and per-commit/per-push authorization.
+bar (token savings never justify a worse result), questions answered instead of acted on,
+plain Brazilian Portuguese that ties every explanation to the file, the screen and a
+concrete example, AI-written Jira tickets translated for the user, the full path of every
+file created, the total ban on em-dashes, the `useEffect` ban with its single debounce
+exception, the Lodash ban, the comment policy (straightforward JSDoc-style technical
+documentation or nothing), and per-commit/per-push authorization.
 
 Instead of repeating the same corrections at the start of every session, the rules are
 versioned here once and arrive in context before the first reply, every time.
@@ -23,20 +27,20 @@ versioned here once and arrive in context before the first reply, every time.
 [skills.sh](https://www.skills.sh).
 
 ```bash
-npx skills add maiconlara/start-session
+npx skills add maiconlara/session-start
 ```
 
 With no flag it installs into the current project only. With `-g` it applies across all of
 your projects:
 
 ```bash
-npx skills add -g maiconlara/start-session
+npx skills add -g maiconlara/session-start
 ```
 
 **Via git, personal scope.** If you would rather version the skill yourself.
 
 ```bash
-git clone https://github.com/maiconlara/start-session.git \
+git clone https://github.com/maiconlara/session-start.git \
   ~/.claude/skills/session-start
 ```
 
@@ -48,41 +52,27 @@ Update with `git pull` inside the folder.
 ## Automatic loading
 
 Installing the skill makes `/session-start` available, but the point is not having to
-invoke anything. Add a `SessionStart` hook to `~/.claude/settings.json` (merge into the
-existing JSON) so the rules are injected on every session start: startup, resume, clear
-and compact.
+invoke anything. Import it from your user-level `~/.claude/CLAUDE.md` (create the file if it
+does not exist) and Claude Code loads the rules into every session, in every project:
 
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"~/.claude/skills/session-start/session-start-hook.js\"",
-            "statusMessage": "Loading session-start rules"
-          }
-        ]
-      }
-    ]
-  }
-}
+```md
+@~/.claude/skills/session-start/SKILL.md
 ```
 
-`session-start-hook.js` prints the `SKILL.md` body (frontmatter stripped) to stdout, and
-Claude Code injects that output as context. Point the command at wherever the repo lives;
-the script always reads the `SKILL.md` sitting next to it.
+Point the path at wherever the repo lives. Claude Code expands the import when the session
+starts and sends the whole file with every request, so compaction never summarizes it away,
+and subagents receive it too.
 
-Running on `compact` as well is deliberate: long sessions are exactly where standing rules
-get summarized away, so the hook re-injects them right after compaction.
+Upgrading from the old `SessionStart` hook: delete that hook from `~/.claude/settings.json`
+and add the import above. Keeping both loads the rules twice, and the hook alone no longer
+works (see the FAQ).
 
 ## Usage
 
 Nothing to invoke. Open a session, send your first message, and the rules are already in
 context before the agent replies.
 
-To re-load mid-session, or to load them in an agent without the hook: `/session-start`.
+To re-load mid-session, or to load them in an agent without the import: `/session-start`.
 When invoked before any real request, it confirms the rules are loaded and waits for the
 actual start of the session.
 
@@ -91,8 +81,13 @@ actual start of the session.
 | Rule | What it enforces |
 |---|---|
 | Best solution first | Any token saving that produces a worse result is invalid |
+| Questions get answers | A question is answered, never taken as a cue to change code, files or anything else |
+| Talk like a person | Plain Brazilian Portuguese without AI jargon; every code explanation names the file, the screen or column, and a concrete example |
+| Translate Jira tickets | Acronyms, niche terms and internal labels of AI-written tickets are explained, never guessed |
+| Show created file paths | Every file created, moved or exported comes with its full absolute path, in the operating system's own format |
 | No em-dashes | No `—` anywhere: chat, code, docs, commits; `grep` every touched file before saying done |
 | No useEffect | Forbidden for form defaults, focus and state sync; the shared `useDebounce` hook is the one exception |
+| No Lodash | Native JavaScript only, even when Lodash is installed and the file already uses it |
 | Comment policy | No comments except straightforward JSDoc-style technical documentation, in English |
 | Commits and pushes | One explicit authorization per commit and per push, never a standing permission |
 | After loading | Confirm and wait for the user's actual request instead of starting work |
@@ -102,31 +97,33 @@ The full text, with the rationale and the code patterns to use instead, lives in
 
 ## Requirements
 
-Node.js for the hook script, and Claude Code for the automatic loading. As a plain skill,
-it works in any agent that reads `SKILL.md`, with no runtime at all.
+Claude Code for the automatic loading. As a plain skill, it works in any agent that reads
+`SKILL.md`, with no runtime at all.
 
 ## Structure
 
 ```
-SKILL.md                 the rules, the only file loaded into context
-session-start-hook.js    prints the SKILL.md body for the SessionStart hook
+SKILL.md    the rules, the only file loaded into context
 ```
 
 ## FAQ
 
-**Why a hook instead of CLAUDE.md?**
-CLAUDE.md is per project, so personal rules end up copied and drifting across repos and
-machines. A user-level `SessionStart` hook applies to every project on the machine from a
-single versioned source, and unlike a memory file it cannot be skipped: the harness injects
-it, the model does not decide to read it.
+**Why an import in CLAUDE.md instead of a `SessionStart` hook?**
+A hook can inject at most 10,000 characters per output (Claude Code 2.1.281). Past that,
+Claude Code saves the text to a file and the model only sees a 2,000-character preview, so
+most rules silently stop applying, and this file is already past that. The user-level
+`~/.claude/CLAUDE.md` has no such cut (it only shows a performance warning from about 40,000
+characters), applies to every project on the machine, is injected by the harness instead of
+read at the model's discretion, and also reaches subagents, unless an agent's definition
+opts out. The import keeps a single versioned source: the file in this repo.
 
-**Why does it re-run on resume and compact?**
-Because those are the moments context gets rebuilt or summarized, which is when standing
-rules are most likely to fade. Re-injecting costs about one kilobyte.
+**Does it survive compaction?**
+Yes. `CLAUDE.md` and its imports are sent with every request instead of living in the
+conversation history, so compaction never summarizes them away.
 
 **Does it work outside Claude Code?**
 The rules themselves, yes: install it as a normal skill and invoke it at the start of the
-session. The automatic injection relies on Claude Code's `SessionStart` hook.
+session. The automatic loading relies on Claude Code's `CLAUDE.md` imports.
 
 **Why does SKILL.md contain em-dashes if they are banned?**
 Only in the lines that define the ban and in the "Bad" examples. A rule that forbids a
