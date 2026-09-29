@@ -12,8 +12,8 @@ user-level `CLAUDE.md`.
 
 It carries the standing rules a session must follow before doing anything else: the quality
 bar (token savings never justify a worse result), questions answered instead of acted on, a
-four-field contract (Papel, Regra, Exemplo, Critério de sucesso) agreed before every
-request and waived only by the user, plain Brazilian Portuguese that ties every explanation to the file, the
+four-field contract (Papel, Regra, Exemplo, Critério de sucesso) agreed once, at the
+session's first request, and waived only by the user, plain Brazilian Portuguese that ties every explanation to the file, the
 screen and a concrete example, AI-written Jira tickets translated for the user, the full
 path of every file created, the total ban on em-dashes, the `useEffect` ban with its single
 debounce exception, the Lodash ban, the comment policy (straightforward JSDoc-style
@@ -83,7 +83,7 @@ actual start of the session.
 |---|---|
 | Best solution first | Any token saving that produces a worse result is invalid |
 | Questions get answers | A question is answered, never taken as a cue to change code, files or anything else |
-| Session contract | Every request starts with Papel, Regra, Exemplo and Critério de sucesso drafted from the repository and ends checked against them; only the user can waive it, explicitly |
+| Session contract | Agreed once, at the session's first request: Papel, Regra, Exemplo and Critério de sucesso drafted from the repository; every later request follows it and each delivery ends checked against it; only the user can waive it, explicitly |
 | Talk like a person | Plain Brazilian Portuguese without AI jargon; every code explanation names the file, the screen or column, and a concrete example |
 | Translate Jira tickets | Acronyms, niche terms and internal labels of AI-written tickets are explained, never guessed |
 | Show created file paths | Every file created, moved or exported comes with its full absolute path, in the operating system's own format |

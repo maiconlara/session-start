@@ -2,21 +2,22 @@
 
 ## Purpose
 
-The contract turns a chat request into four checkable commitments. Its value comes from three things: grounding every field in the real repository instead of generic examples, validating each field against an objective test, and checking the delivered work against the contract at the end. Every rule below serves one of these.
+The contract turns the session's first request into four checkable commitments that hold for the rest of the session. Its value comes from three things: grounding every field in the real repository instead of generic examples, validating each field against an objective test, and checking the delivered work against the contract. Every rule below serves one of these.
 
-Flow: detect what the user gave, inspect and draft, ask only what is missing, validate, acknowledge, enforce, close.
+Flow: detect what the user gave, inspect and draft, ask only what is missing, validate, acknowledge, enforce, check each delivery.
 
 ## Scope
 
-The contract ALWAYS applies. Every request gets one before the agent answers or acts: implementation, bug fixes, docs, scripts, analysis, ideas, suggestions, plans and questions alike. The agent never decides on its own that a request is too small, too simple or too urgent for a contract.
+The contract is per session, not per request or per task. It is agreed once, at the first request of the session, whatever that request is: implementation, bug fixes, docs, scripts, analysis, ideas, suggestions, plans and questions alike. The agent never decides on its own that the first request is too small, too simple or too urgent for a contract. A message with no request in it (a greeting, or `/session-start` alone) does not open the contract; the first actual request does.
 
-What does not need a new contract:
+After that, the same contract covers the whole session (see "Later requests in the same session"). None of these ever opens a new contract:
 
-* follow-up messages inside a task that already has a contract;
-* the read-only inspection described in Step 2, which happens before the contract is agreed;
-* subagents: the task the main session hands them is covered by the main session's contract. Only the main session drafts the contract with the user and closes it.
+* follow-up messages, and new requests on a different subject;
+* compaction (the conversation summarized to free up context) and resuming the conversation later: it is still the same session, and the agreed contract still holds;
+* the skill being loaded again mid-session with `/session-start`;
+* subagents: the work the main session hands them is covered by the main session's contract. Only the main session drafts the contract with the user and checks deliveries against it.
 
-One contract per task. Papel and Regra usually carry over to the next task in the same session; Exemplo and Critério de sucesso are task-specific (see "New task in the same session").
+The read-only inspection described in Step 2 happens before the contract is agreed and does not need one.
 
 The only way to skip the contract is the user's explicit waiver, described next.
 
@@ -26,23 +27,24 @@ Only the user can waive the contract, and only explicitly.
 
 * The waiver must name the contract: "seguir sem contrato", "sem contrato", "pode pular o contrato". A plain go-ahead ("ok", "pode ir", "faz aí") confirms the proposed contract and never waives it (see Step 5). Urgency, a small task or a short message is not a waiver either.
 * The agent MUST NOT choose this option, assume it or read it from silence. It only reminds the user that the option exists, in one line at the end of the contract block.
-* A waiver covers the current task only, unless the user explicitly says it covers more ("sem contrato até o fim da sessão"). The next task starts with a contract again.
-* When the user waives it, confirm in one line ("Seguindo sem contrato nesta tarefa.") and go on. Every other standing rule still applies.
+* A waiver covers the whole session, just like the contract it replaces. The agent never offers the contract again in that session. If the user later asks for one explicitly ("vamos fazer o contrato"), run the full procedure; that contract then holds for the rest of the session.
+* When the user waives it, confirm in one line ("Seguindo sem contrato nesta sessão.") and go on. Every other standing rule still applies.
 
 ## Hard rules
 
-1. The agent MUST NOT answer the request, modify files, create files, install dependencies, run commands with side effects or begin implementation until all four fields are complete, validated and acknowledged, unless the user explicitly waived the contract.
-2. The agent MAY and SHOULD inspect the repository before asking anything: read files, search, run read-only git commands, run the existing test, typecheck and lint commands to record a baseline.
-3. The agent MUST propose before asking. After inspection it drafts every missing or weak field from what it found, labels each draft `[Minha proposta]`, and asks the user to confirm, edit or replace. A proposal is never treated as the user's requirement until the user confirms it.
-4. The agent MUST NOT accept a field that fails its acceptance test (Step 4).
-5. The agent MUST enforce the contract during the task (Step 7) and report against it at the end (Step 8).
-6. Standing rules (session-start rules, CLAUDE.md, safety and permission rules) remain in force. The contract adds to them and cannot silence them. A conflict is surfaced to the user, never resolved silently.
-7. The templates below are in pt-BR, the language of every reply (see "Talk like a person, in Brazilian Portuguese" in SKILL.md).
-8. Only the user can waive the contract, explicitly (see "Opting out: seguir sem contrato"). The agent never skips it on its own.
+1. At the session's first request, the agent MUST NOT answer, modify files, create files, install dependencies, run commands with side effects or begin implementation until all four fields are complete, validated and acknowledged, unless the user explicitly waived the contract.
+2. The contract is requested once per session. Once it is agreed or waived, the agent MUST NOT draft a new contract, repeat the confirmation block or re-ask the fields, however different the next request is. The only contract questions allowed afterwards are about a conflict with one specific field (Step 7).
+3. The agent MAY and SHOULD inspect the repository before asking anything: read files, search, run read-only git commands, run the existing test, typecheck and lint commands to record a baseline.
+4. The agent MUST propose before asking. After inspection it drafts every missing or weak field from what it found, labels each draft `[Minha proposta]`, and asks the user to confirm, edit or replace. A proposal is never treated as the user's requirement until the user confirms it.
+5. The agent MUST NOT accept a field that fails its acceptance test (Step 4).
+6. The agent MUST enforce the contract for the whole session (Step 7) and check each delivery against it (Step 8).
+7. Standing rules (session-start rules, CLAUDE.md, safety and permission rules) remain in force. The contract adds to them and cannot silence them. A conflict is surfaced to the user, never resolved silently.
+8. The templates below are in pt-BR, the language of every reply (see "Talk like a person, in Brazilian Portuguese" in SKILL.md).
+9. Only the user can waive the contract, explicitly (see "Opting out: seguir sem contrato"). The agent never skips it on its own.
 
 ## Step 1: Detect what the user already provided
 
-* Parse the request for the four labels in any order: `Papel`, `Regra`, `Exemplo`, `Critério de sucesso`. Also accept `Role`, `Rule`, `Example`, `Success criteria`.
+* Parse the session's first request for the four labels in any order: `Papel`, `Regra`, `Exemplo`, `Critério de sucesso`. Also accept `Role`, `Rule`, `Example`, `Success criteria`.
 * A value written under the wrong label is moved to the right field, not rejected. Say so in the acknowledgment ("movi X para Exemplo"). See "Field boundaries".
 * Fast path: when all four fields are present and pass Step 4, skip the questions and go straight to Step 6. Still resolve the Exemplo reference and record the baseline.
 
@@ -51,8 +53,8 @@ Only the user can waive the contract, and only explicitly.
 Spend a bounded effort (a handful of reads and searches, not a full audit) to ground the draft:
 
 * Stack and conventions: package manifest, lint and TypeScript config, CLAUDE.md, folder layout.
-* Files most likely touched by the task.
-* Candidate references for Exemplo: a similar component, screen, endpoint, hook or test that already does what the task needs.
+* Files most likely touched by the first request.
+* Candidate references for Exemplo: a similar component, screen, endpoint, hook or test that already does what the request needs.
 * Verification tooling: test runner, typecheck, lint, e2e. Run what is cheap and record the baseline, for example "42 testes passando, typecheck limpo". A criterion like "os testes continuam passando" is only checkable against a baseline.
 
 Draft each missing or weak field from these findings. The generic examples in this document are a fallback for when the repository gives nothing to anchor on. When it does, the proposals MUST name real files, components, commands and screens.
@@ -62,7 +64,7 @@ Draft each missing or weak field from these findings. The generic examples in th
 Use one compact block. Ask open questions only where the repository gave nothing. Proposals are labeled `[Minha proposta]`. Every answer line keeps its placeholder in parentheses, so the user knows what to write there. The values in the block below are illustrative: replace them with what Step 2 found, and never present them as the user's requirements.
 
 ```text
-Antes de começar, preciso fechar o contrato desta sessão. Já olhei o repositório e preenchi o que dá para inferir. Confirme, edite ou substitua cada campo.
+Antes de começar, preciso fechar o contrato desta sessão. Ele vale para todos os pedidos daqui em diante, então só pergunto uma vez. Já olhei o repositório e preenchi o que dá para inferir. Confirme, edite ou substitua cada campo.
 
 Tarefa (como entendi): [uma linha]
 
@@ -100,7 +102,7 @@ Para cada critério vou registrar como verifico (comando ou passo manual). Ajust
 
 Critério de sucesso: (cole a minha proposta ou escreva como vamos saber que terminou)
 
-Se preferir seguir sem contrato nesta tarefa, é só responder "seguir sem contrato".
+Se preferir seguir sem contrato nesta sessão, é só responder "seguir sem contrato".
 ```
 
 ## Step 4: Validate each field
@@ -139,7 +141,7 @@ A field is accepted only when it passes its test. Anything else is incomplete.
 All of these MUST hold before acceptance:
 
 * No contradiction between fields, such as Regra "não altere APIs existentes" against Critério "novo endpoint disponível".
-* No contradiction with the task as written in the chat.
+* No contradiction with the request as written in the chat.
 * No contradiction with the repository, such as an Exemplo that points to a pattern the repository does not use, or a Regra that forbids the only mechanism the codebase offers.
 * No conflict with standing rules. If one exists, name it and ask which one wins.
 
@@ -188,7 +190,7 @@ Você respondeu "Nenhum". Encontrei `src/features/products/ProductForm.tsx`, que
 3. As telas de produtos não mudam de comportamento (automático, via testes existentes).
 
 Confirme ou ajuste esses campos.
-Se preferir seguir sem contrato nesta tarefa, é só responder "seguir sem contrato".
+Se preferir seguir sem contrato nesta sessão, é só responder "seguir sem contrato".
 ```
 
 ## Step 6: Acknowledge
@@ -213,20 +215,22 @@ Critério de sucesso:
 2. [texto final] | verificação: [passos] (manual)
 
 As regras permanentes da sessão continuam valendo.
-Vou usar este contrato como referência até o fechamento da tarefa. Começando.
+Vou usar este contrato em todos os pedidos desta sessão, sem pedir outro. Começando.
 ```
 
 Work may start after this message.
 
-## Step 7: Enforce during the task
+## Step 7: Enforce during the session
 
-* Before each non-trivial decision (new file, new dependency, change outside the expected area, deviation from Exemplo), check it against Regra and Exemplo.
+* Before each non-trivial decision in any request of the session (new file, new dependency, change outside the expected area, deviation from Exemplo), check it against Regra and Exemplo.
 * If a rule cannot be followed or a criterion cannot be met, stop, explain why, propose an amendment to the affected field only, and wait. Never deviate silently.
-* If new information changes the task materially, propose an amendment to the affected fields only. Unaffected fields stay as agreed.
+* If new information contradicts a field (the Exemplo turns out not to fit, a criterion becomes impossible), propose an amendment to that field only. Unaffected fields stay as agreed. A new request from the user is not such information: it follows the contract as agreed.
 
-## Step 8: Close against the contract
+## Step 8: Check each delivery against the contract
 
-The final message of the task MUST include the check below. A criterion is marked as verified only with evidence: the command and its result, or a reproduced manual check. Anything not verified is reported as pending, with the steps the user needs.
+Every reply that completes a request which changed files or produced a deliverable MUST end with the check below. List every Regra item (items this delivery could not have affected share one line: "Regras 2 e 3: não se aplicam a este pedido"), and the Critério de sucesso items the delivery affects; a criterion that guards the whole session, such as a baseline test command, is re-run whenever code changed. When the delivery falls outside every criterion, add one line saying how it was verified. A plain answer to a question needs no check, unless the Critério de sucesso was written for that answer.
+
+A criterion is marked as verified only with evidence: the command and its result, or a reproduced manual check. Anything not verified is reported as pending, with the steps the user needs.
 
 ```text
 Conferência do contrato
@@ -238,12 +242,19 @@ Regra:
 Critério de sucesso:
 1. [critério]: verificado (`comando`, resultado)
 2. [critério]: verificação manual pendente (passos: ...)
+
+Fora dos critérios, [o que foi entregue]: verificado (`comando`, resultado)
 ```
 
-## New task in the same session
+## Later requests in the same session
 
-* Follow-up messages inside the current task do not need a new contract.
-* A new task needs a new contract. Propose keeping Papel and Regra ("mantenho Papel e Regra?") and ask for Exemplo and Critério de sucesso of the new task, in one short block. The same validation applies.
+Every request after the first is covered by the session contract, whatever its size or subject, even when it starts a different piece of work.
+
+* Do it directly: no new contract, no confirmation block, no "mantenho Papel e Regra?".
+* Papel and Regra apply to every request. Exemplo applies whenever the request touches what it references. Critério de sucesso applies to the work it describes; a request outside it is verified with its own evidence (Step 8).
+* Stop only when the request cannot be done without breaking a Regra, or contradicts another field. Ask one short question about that field alone, and wait: "Isso mexe fora de `src/features/orders`, o que a Regra 1 proíbe. Abro uma exceção só para este pedido?". Never turn that question into a new contract.
+* The user may add to or change any field at any moment by writing it ("Regra: também não mexer em `packages/ui`"). From then on the new value holds: validate that field alone (Step 4) and confirm in one line.
+* A full new contract is drafted only when the user explicitly asks for one ("vamos fazer um contrato novo").
 
 ## Field boundaries
 
@@ -261,4 +272,4 @@ One field never substitutes for another. When a value lands in the wrong field, 
 * "O usuário deve conseguir editar o registro" is a Critério de sucesso, not a Papel.
 * "Priorize simplicidade" belongs to what the Papel prioritizes, not to Regra. The Regra version would be "não crie abstrações com um único uso".
 
-Keep the distinction because each field is checked differently: Papel guides decisions, Regra is checked on the diff, Exemplo is resolved in the repository, Critério de sucesso is verified at the end.
+Keep the distinction because each field is checked differently: Papel guides decisions, Regra is checked on the diff, Exemplo is resolved in the repository, Critério de sucesso is verified in each delivery's check.
