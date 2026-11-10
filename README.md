@@ -89,6 +89,7 @@ actual start of the session.
 | No useEffect | Forbidden for form defaults, focus and state sync; the shared `useDebounce` hook is the one exception |
 | No Lodash | Native JavaScript only, even when Lodash is installed and the file already uses it |
 | Comment policy | No comments except straightforward JSDoc-style technical documentation, in English |
+| Review comments | PR review comments in simple English, at most 2 lines: the problem, what it causes, the fix; no bold, no labels, no orders, no compliments |
 | Commits and pushes | One explicit authorization per commit and per push, never a standing permission |
 | After loading | Confirm and wait for the user's actual request instead of starting work |
 

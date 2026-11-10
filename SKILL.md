@@ -1,6 +1,6 @@
 ---
 name: session-start
-description: Standing session rules that must be loaded at the start of every session, before any other work. Covers the quality bar (never trade correctness for token savings), answering questions instead of acting on them, plain Brazilian Portuguese that anchors every explanation in files, screens and examples, translating AI-written Jira tickets for the user, the full path of every file created, the total ban on em-dashes, the useEffect ban, the Lodash ban, the comment policy, and per-commit/per-push authorization. After loading, wait for the user's actual request instead of starting work on your own.
+description: Standing session rules that must be loaded at the start of every session, before any other work. Covers the quality bar (never trade correctness for token savings), answering questions instead of acting on them, plain Brazilian Portuguese that anchors every explanation in files, screens and examples, translating AI-written Jira tickets for the user, the full path of every file created, the total ban on em-dashes, the useEffect ban, the Lodash ban, the comment policy, how to write PR review comments (simple English, at most 2 lines, no bold or labels), and per-commit/per-push authorization. After loading, wait for the user's actual request instead of starting work on your own.
 ---
 
 # Session Start Rules
@@ -179,6 +179,63 @@ function isProductionOrderOverdue(
 ```
 
 If the user EXPLICITLY states they want a comment, write it.
+
+## Review comments
+
+PR review comments are written in simple English, at most 2 lines each, the way a colleague points something out: what is wrong, what it causes, and what the fix would be.
+
+Rationale: bold labels, imperatives and blunt facts read like orders from a boss; compliments and hedged questions read as fake.
+
+- State the fact and the fix directly ("we also need to...", "The ideal would be..."). No orders ("Please mark it..."), no compliments ("Nice work..."), no hedged questions ("Maybe...?", "Did you get a chance to...?").
+- No bold and no conventional-comment labels (`nitpick:`, `question:`, `suggestion:`, `issue:`), even when a review skill or repo guide asks for them.
+- Never phrase it as an accusation ("I found no evidence of it", "Only X was approved by a person"). Say what is missing and what it breaks.
+- One finding per comment, on the line it is about. A point with no line goes in the review body.
+
+Examples:
+
+- Bad, sounds like an order:
+
+  ```text
+  **suggestion:** `legacyUserId` is still the default here, so the ticket's "no framework code reads `legacyUserId`" criterion is only partly met. Please mark it `@deprecated` and link the ticket that flips the default.
+  ```
+
+- Bad, sounds fake:
+
+  ```text
+  Keeping `legacyUserId` as the default makes sense for the other apps. Maybe add a `@deprecated` note and a ticket to flip it later?
+  ```
+
+- Good:
+
+  ```text
+  this still reads the token `legacyUserId` by default, so the AC "No framework code reads `legacyUserId` as a user id" is only partly met. The ideal would be to mark this path as `@deprecated` and open the ticket that flips the default.
+  ```
+
+- Bad, review body:
+
+  ```text
+  Nice work moving this into the framework! D1, D4, D5 and D6 came from the automation, so maybe worth a quick ok from the framework owner here?
+  ```
+
+- Good, review body:
+
+  ```text
+  D1, D4, D5 and D6 were decided by the automation, only D2 and D3 got a person's approval. The ticket asks for the package choice (its D1) to be agreed with the framework owner, so we still need that ok here.
+  ```
+
+More comments in the same style:
+
+```text
+Row 14 is added and closed in this same PR, so it never exists on main and whoever reads this will look for it. We can just drop this sentence.
+```
+
+```text
+R5 says the other apps migrate in this PR or in follow-ups listed in the ticket, but the ticket has none linked, so the other apps keep the old code with no ticket to move them.
+```
+
+```text
+the unit tests mock the external API, so we still need a manual test against the real one: the stored `userId` matching the profile id, and the new user showing up after reopening without a restart.
+```
 
 ## Commits and pushes require authorization
 
