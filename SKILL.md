@@ -1,6 +1,6 @@
 ---
 name: session-start
-description: Standing session rules that must be loaded at the start of every session, before any other work. Covers the quality bar (never trade correctness for token savings), answering questions instead of acting on them, plain Brazilian Portuguese that anchors every explanation in files, screens and examples, translating AI-written Jira tickets for the user, the full path of every file created, the total ban on em-dashes, the useEffect ban, the Lodash ban, the comment policy, how to write PR review comments (simple English, at most 2 lines, no bold or labels), and per-commit/per-push authorization. After loading, wait for the user's actual request instead of starting work on your own.
+description: Standing session rules that must be loaded at the start of every session, before any other work. Covers the quality bar (never trade correctness for token savings), answering questions instead of acting on them, plain Brazilian Portuguese that anchors every explanation in files, screens and examples, translating AI-written Jira tickets for the user, the full path of every file created, the total ban on em-dashes, the useEffect ban, the Lodash ban, the comment policy, how to write PR review comments and replies (simple English, at most 2 lines, lowercase start, no colons, no bold or labels, a reply says only what the diff does not show), and per-commit/per-push authorization. After loading, wait for the user's actual request instead of starting work on your own.
 ---
 
 # Session Start Rules
@@ -187,6 +187,8 @@ PR review comments are written in simple English, at most 2 lines each, the way 
 Rationale: bold labels, imperatives and blunt facts read like orders from a boss; compliments and hedged questions read as fake.
 
 - State the fact and the fix directly ("we also need to...", "The ideal would be..."). No orders ("Please mark it..."), no compliments ("Nice work..."), no hedged questions ("Maybe...?", "Did you get a chance to...?").
+- Start the comment with a lowercase letter (`this still reads...`, `done`). The sentences after the first one keep normal capitalization.
+- No colon (`:`) in the text of a comment. Join the parts with a comma or split them into sentences. A colon inside a code span is code, not text.
 - No bold and no conventional-comment labels (`nitpick:`, `question:`, `suggestion:`, `issue:`), even when a review skill or repo guide asks for them.
 - Never phrase it as an accusation ("I found no evidence of it", "Only X was approved by a person"). Say what is missing and what it breaks.
 - One finding per comment, on the line it is about. A point with no line goes in the review body.
@@ -220,22 +222,59 @@ Examples:
 - Good, review body:
 
   ```text
-  D1, D4, D5 and D6 were decided by the automation, only D2 and D3 got a person's approval. The ticket asks for the package choice (its D1) to be agreed with the framework owner, so we still need that ok here.
+  only D2 and D3 got a person's approval, the automation decided D1, D4, D5 and D6. The ticket asks for the package choice (its D1) to be agreed with the framework owner, so we still need that ok here.
   ```
 
 More comments in the same style:
 
 ```text
-Row 14 is added and closed in this same PR, so it never exists on main and whoever reads this will look for it. We can just drop this sentence.
+row 14 is added and closed in this same PR, so it never exists on main and whoever reads this will look for it. We can just drop this sentence.
 ```
 
 ```text
-R5 says the other apps migrate in this PR or in follow-ups listed in the ticket, but the ticket has none linked, so the other apps keep the old code with no ticket to move them.
+rule R5 says the other apps migrate in this PR or in follow-ups listed in the ticket, but the ticket has none linked, so the other apps keep the old code with no ticket to move them.
 ```
 
 ```text
-the unit tests mock the external API, so we still need a manual test against the real one: the stored `userId` matching the profile id, and the new user showing up after reopening without a restart.
+the unit tests mock the external API, so we still need a manual test against the real one, checking that the stored `userId` matches the profile id and that the new user shows up after reopening without a restart.
 ```
+
+### Replying to a review comment
+
+A reply tells the reviewer only what the diff does not show. The same rules apply: simple English, at most 2 lines, lowercase start, no colons, no bold or labels.
+
+Rationale: a reply that opens with "Done in <commit>:" and retells the change reads as written by an AI.
+
+- Never open with a report formula (`Done in <commit>`, `Fixed in <commit>`, `Addressed in...`), and never describe what was changed. The reviewer reads the commit.
+- When the fix is what the reviewer asked for, the reply is just `done`.
+- Add words only for an exception (the fix differs from what was suggested, or part of it was not done, and why) or for a change outside what was asked (another place changed too, another behavior changed with it).
+- A reply that answers a question or confirms a cause the reviewer guessed says just that, in one sentence.
+
+Examples:
+
+- Bad, retells the diff:
+
+  ```text
+  Done in [c4edaf1](https://github.com/stays-net/hdb/commit/c4edaf1a42): IgniteUpstream is now the default export of test/localAPI/ignite.mjs, and 01.ignite-router.mjs imports it from there.
+  ```
+
+- Good, the fix is what was asked:
+
+  ```text
+  done
+  ```
+
+- Good, the fix differs from the suggestion:
+
+  ```text
+  done, the update uses `new ObjectId(_idapp)` instead of `app._id`, since `getApps` returns nothing for an app the plan no longer offers
+  ```
+
+- Good, a change outside what was asked:
+
+  ```text
+  done, for the scan queue too, so this also changes how the scan stops on production
+  ```
 
 ## Commits and pushes require authorization
 
