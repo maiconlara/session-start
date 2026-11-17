@@ -249,6 +249,7 @@ Rationale: a reply that opens with "Done in <commit>:" and retells the change re
 - When the fix is what the reviewer asked for, the reply is just `done`.
 - Add words only for an exception (the fix differs from what was suggested, or part of it was not done, and why) or for a change outside what was asked (another place changed too, another behavior changed with it).
 - A reply that answers a question or confirms a cause the reviewer guessed says just that, in one sentence.
+- When the reviewer points out that the new code differs from older code next to it, say that the new code follows the current rule and that the older code is not yours (you did not work on it) and predates the rule, so the reviewer knows why the two differ. Lead with your code, not with how the rule works, and do not repeat the names the reviewer already quoted.
 
 Examples:
 
@@ -274,6 +275,18 @@ Examples:
 
   ```text
   done, for the scan queue too, so this also changes how the scan stops on production
+  ```
+
+- Bad, the new code differs from older code, and the reply explains the rule and repeats the names the reviewer quoted:
+
+  ```text
+  the lint now warns on `Promise.expressify` and `ctx.sendApiResponse`, all the older routes of this file get those warnings, so the new ones are written without them
+  ```
+
+- Good, the new code follows the rule and the older code is not yours:
+
+  ```text
+  new routes use what the lint asks for, and the older ones in the file (which I did not work on) are from before that rule
   ```
 
 ## Commits and pushes require authorization
