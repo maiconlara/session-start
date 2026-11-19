@@ -15,8 +15,9 @@ bar (token savings never justify a worse result), questions answered instead of 
 plain Brazilian Portuguese that ties every explanation to the file, the screen and a
 concrete example, AI-written Jira tickets translated for the user, the full path of every
 file created, the total ban on em-dashes, the `useEffect` ban with its single debounce
-exception, the Lodash ban, the comment policy (straightforward JSDoc-style technical
-documentation or nothing), and per-commit/per-push authorization.
+exception, the Lodash ban, naming conventions (every name explains its use at first read),
+the comment policy (straightforward JSDoc-style technical documentation or nothing), and
+per-commit/per-push authorization.
 
 Instead of repeating the same corrections at the start of every session, the rules are
 versioned here once and arrive in context before the first reply, every time.
@@ -88,6 +89,7 @@ actual start of the session.
 | No em-dashes | No `—` anywhere: chat, code, docs, commits; `grep` every touched file before saying done |
 | No useEffect | Forbidden for form defaults, focus and state sync; the shared `useDebounce` hook is the one exception |
 | No Lodash | Native JavaScript only, even when Lodash is installed and the file already uses it |
+| Naming conventions | Every constant, function, hook and variable name explains its use at first read: `useGetGreenUsers`, `getGreenUsersIds`, `proxiedBackendApi` |
 | Comment policy | No comments except straightforward JSDoc-style technical documentation, in English |
 | Review comments | PR review comments in simple English, at most 2 lines: the problem, what it causes, the fix; no bold, no labels, no orders, no compliments |
 | Commits and pushes | One explicit authorization per commit and per push, never a standing permission |

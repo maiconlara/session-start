@@ -1,6 +1,6 @@
 ---
 name: session-start
-description: Standing session rules that must be loaded at the start of every session, before any other work. Covers the quality bar (never trade correctness for token savings), answering questions instead of acting on them, plain Brazilian Portuguese that anchors every explanation in files, screens and examples, translating AI-written Jira tickets for the user, the full path of every file created, the total ban on em-dashes, the useEffect ban, the Lodash ban, the comment policy, how to write PR review comments and replies (simple English, at most 2 lines, lowercase start, no colons, no bold or labels, a reply says only what the diff does not show), and per-commit/per-push authorization. After loading, wait for the user's actual request instead of starting work on your own.
+description: Standing session rules that must be loaded at the start of every session, before any other work. Covers the quality bar (never trade correctness for token savings), answering questions instead of acting on them, plain Brazilian Portuguese that anchors every explanation in files, screens and examples, translating AI-written Jira tickets for the user, the full path of every file created, the total ban on em-dashes, the useEffect ban, the Lodash ban, naming conventions (every name explains its use at first read), the comment policy, how to write PR review comments and replies (simple English, at most 2 lines, lowercase start, no colons, no bold or labels, a reply says only what the diff does not show), and per-commit/per-push authorization. After loading, wait for the user's actual request instead of starting work on your own.
 ---
 
 # Session Start Rules
@@ -153,6 +153,27 @@ In JavaScript and TypeScript, never use Lodash, even when it is already installe
 | `_.omit(user, ['password'])` | `const { password, ...safeUser } = user` |
 | `_.cloneDeep(value)` | `structuredClone(value)` |
 | `_.debounce(fn, 500)` | `useDebounce` in React (see No useEffect), `setTimeout` and `clearTimeout` elsewhere |
+
+## Naming conventions
+
+Constants, variables, functions, hooks, parameters and types get names that are easy to understand and explain what they are for. If someone reads a name and does not understand its use right away, the code is badly written, however short or common the name is.
+
+Rationale: generic names like `api`, `client` or `data` force the reader to open the definition to learn what the value is, and words like "client" and "server" change meaning with the layer (in Next.js they are the two sides of the app, not an HTTP client).
+
+- Name a value by what it holds or does, never by its kind alone: `proxiedBackendApi`, not `api`; `assessedStudentIds`, not `ids`; `users` taken from a response, not `data`.
+- A function starts with a verb for the action, followed by exactly what it acts on: `getGreenUsersIds`, `changeUserStatus`, `formatBmi`.
+- A hook is `use` plus the verb and object the matching function would have: `useGetGreenUsers`, `useCreateUser`, `useDeleteAssessment`.
+- A boolean reads as a yes or no question: `isStudent`, `canDeleteUsers`, `hasAssessments`.
+- When two values play the same role, the names show what sets them apart. Both API instances in the table carry the user's session, so "authenticated" does not tell them apart; the path each one takes does.
+- Words whose meaning depends on the layer (`client`, `server`, `handler`, `manager`) only appear with what makes them specific: `getDirectBackendApi`, not `getServerClient`.
+- A rename covers the whole chain: the variable, the parameter that receives it, the option it travels in and its type change together, so the old word does not come back one step later.
+
+| What it is | Bad | Good |
+|---|---|---|
+| Hook that fetches all green users | `useUsers`, `useGreen` | `useGetGreenUsers` |
+| Function that fetches the ids of the green users | `getIds`, `fetchData` | `getGreenUsersIds` |
+| Constant with the API instance that goes through the Next proxy | `api`, `client`, `browserApi` | `proxiedBackendApi` |
+| Function that creates the API instance that calls the backend directly with the session token | `getServerClient`, `getAuthenticatedApi` | `getDirectBackendApi` |
 
 ## Comment policy
 
